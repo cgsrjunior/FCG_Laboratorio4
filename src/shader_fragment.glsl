@@ -28,6 +28,11 @@ void main()
     vec4 origin = vec4(0.0, 0.0, 0.0, 1.0);
     vec4 camera_position = inverse(view) * origin;
 
+    //spotlight: fonte de luz fixa em (0.0,2.0,1.0), e com vetor de sentido (0.0,-1.0,0.0)
+    vec4 spotlightPos = vec4(0.0,2.0,1.0,1.0); // Posição da fonte de luz "spotlight"
+    vec4 spotlightDir = normalize(vec4(0.0,-1.0,0.0,0.0)); //Direção da spotlight
+    float spotlightAngle = 3.1415/6; //Ângulo de abertura da fonte de luz fixa
+
     // O fragmento atual é coberto por um ponto que percente à superfície de um
     // dos objetos virtuais da cena. Este ponto, p, possui uma posição no
     // sistema de coordenadas global (World coordinates). Esta posição é obtida
@@ -36,7 +41,7 @@ void main()
     vec4 p = position_world;
 
     //flashLightDirection: Faz o ajuste para receber a posicao do centro da camera
-    vec4 flashLightDirection = normalize(camera_position - position_world);
+    //vec4 flashLightDirection = normalize(camera_position - position_world);
 
     // Normal do fragmento atual, interpolada pelo rasterizador a partir das
     // normais de cada vértice.
@@ -44,7 +49,7 @@ void main()
 
     // Vetor que define o sentido da fonte de luz em relação ao ponto atual.
     // Setamos o vetor l recebendo o flashLightDirection para que assim o foco de luz esteja centralizado na camera
-    vec4 l = flashLightDirection;
+    vec4 l = normalize(spotlightPos - p);
 
     // Vetor que define o sentido da câmera em relação ao ponto atual.
     vec4 v = normalize(camera_position - p);
@@ -110,9 +115,16 @@ void main()
 
     // Cor final do fragmento calculada com uma combinação dos termos difuso,
     // especular, e ambiente. Veja slide 129 do documento Aula_17_e_18_Modelos_de_Iluminacao.pdf.
-    color = Kd * light_spectrum * lambert_diffuse_term  //Termo difuso (Lambert)
+    if (dot(normalize(p - spotlightPos), spotlightDir) < cos(spotlightAngle)) //Se abertura < cos 30 graus
+        color = Ka * ambient_light_spectrum;    //Nao recebe iluminacao nos pontos fora do ponto
+    else
+    {
+        color = Kd * light_spectrum * lambert_diffuse_term  //Termo difuso (Lambert)
             + Ka * ambient_light_spectrum   //Fator Ambiente
             + Ks * light_spectrum * phong_specular_term;    //
+
+    }
+
 
     // Cor final com correção gamma, considerando monitor sRGB.
     // Veja https://en.wikipedia.org/w/index.php?title=Gamma_correction&oldid=751281772#Windows.2C_Mac.2C_sRGB_and_TV.2Fvideo_standard_gammas

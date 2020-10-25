@@ -35,12 +35,16 @@ void main()
     // vértice.
     vec4 p = position_world;
 
+    //flashLightDirection: Faz o ajuste para receber a posicao do centro da camera
+    vec4 flashLightDirection = normalize(camera_position - position_world);
+
     // Normal do fragmento atual, interpolada pelo rasterizador a partir das
     // normais de cada vértice.
     vec4 n = normalize(normal);
 
     // Vetor que define o sentido da fonte de luz em relação ao ponto atual.
-    vec4 l = normalize(vec4(1.0,1.0,0.5,0.0));
+    // Setamos o vetor l recebendo o flashLightDirection para que assim o foco de luz esteja centralizado na camera
+    vec4 l = flashLightDirection;
 
     // Vetor que define o sentido da câmera em relação ao ponto atual.
     vec4 v = normalize(camera_position - p);
